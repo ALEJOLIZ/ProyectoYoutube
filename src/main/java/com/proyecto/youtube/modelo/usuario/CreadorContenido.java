@@ -1,0 +1,4 @@
+package com.proyecto.youtube.modelo.usuario;
+
+public class CreadorContenido extends Usuario {
+}
