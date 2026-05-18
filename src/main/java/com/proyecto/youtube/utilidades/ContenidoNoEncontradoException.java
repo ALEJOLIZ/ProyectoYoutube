@@ -2,7 +2,7 @@ package com.proyecto.youtube.utilidades;
 
 import java.util.UUID;
 
-public class ContenidoNoEncontradoException extends Exception {
+public class ContenidoNoEncontradoException extends RuntimeException {
 
     public ContenidoNoEncontradoException(UUID id) {
         super("Error: El contenido multimedia con ID [" + id + "] ha sido eliminado o no existe.");

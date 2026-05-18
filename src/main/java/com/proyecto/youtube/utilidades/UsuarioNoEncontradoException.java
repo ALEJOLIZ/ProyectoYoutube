@@ -2,7 +2,7 @@ package com.proyecto.youtube.utilidades;
 
 import java.util.UUID;
 
-public class UsuarioNoEncontradoException extends Exception {
+public class UsuarioNoEncontradoException extends RuntimeException {
 
     public UsuarioNoEncontradoException(UUID id) {
         super("Error: El usuario con el ID [" + id + "] no fue encontrado en la base de datos.");
