@@ -4,12 +4,12 @@ import com.proyecto.youtube.modelo.usuario.Usuario;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Comentario {
+public class Comentario extends Interaccion {
     private String texto;
     private List<Comentario> respuestas;
 
     public Comentario(Usuario autor, String texto){
-        super();
+        super(autor);
         this.texto = texto;
         this.respuestas = new ArrayList<>();
     }
