@@ -118,8 +118,6 @@ public class Canal implements Comparable<Canal> {
         }
     }
 
-
-
     public UUID getId() {
         return id;
     }
