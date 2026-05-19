@@ -1,6 +1,7 @@
 package com.proyecto.youtube.modelo.contenido;
-import com.proyecto.youtube.modelo.usuario.CreadorContenido;
+import com.proyecto.youtube.modelo.usuario.Canal;
 import com.proyecto.youtube.modelo.interacciones.Interaccion;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,18 +12,18 @@ public abstract class Contenido implements Comparable<Contenido> {
     private final UUID id;
     private String titulo;
     private String descripcion;
-    private final CreadorContenido autor;
+    private final Canal canalAutor;
     private final LocalDateTime fechaPublicacion;
     private int vistas;
     private List<Interaccion> interacciones;
 
-    public Contenido(String titulo, String descripcion, CreadorContenido autor) {
+    public Contenido(String titulo, String descripcion, Canal canalAutor) {
         this.id = UUID.randomUUID();
         this.titulo = Objects.requireNonNull(titulo, "El título no puede ser nulo");
         this.descripcion = descripcion;
 
         // Validación de la existencia de un PDF
-        this.autor = Objects.requireNonNull(autor, "Todo contenido debe tener un creador");
+        this.canalAutor = Objects.requireNonNull(canalAutor, "Todo contenido debe tener un canal");
 
         this.fechaPublicacion = LocalDateTime.now();
         this.vistas = 0;
@@ -48,7 +49,7 @@ public abstract class Contenido implements Comparable<Contenido> {
     public UUID getId() { return id; }
     public String getTitulo() { return titulo; }
     public String getDescripcion() { return descripcion; }
-    public CreadorContenido getAutor() { return autor; }
+    public Canal getCanalAutor() { return canalAutor; }
     public LocalDateTime getFechaPublicacion() { return fechaPublicacion; }
     public int getVistas() { return vistas; }
     public List<Interaccion> getInteracciones() {
@@ -70,6 +71,6 @@ public abstract class Contenido implements Comparable<Contenido> {
 
     @Override
     public String toString(){
-        return "[" + titulo + "] por " + autor + " | Vistas: " + vistas;
+        return "[" + titulo + "] por " + canalAutor.getNombreCanal() + " | Vistas: " + vistas;
     }
 }
