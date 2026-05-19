@@ -14,6 +14,7 @@ public class Notificacion {
         this.fecha = LocalDateTime.now();
     }
 
+    public UUID getId() { return id; }
     public String getMensaje() { return mensaje; }
     public LocalDateTime getFecha() { return fecha; }
 }

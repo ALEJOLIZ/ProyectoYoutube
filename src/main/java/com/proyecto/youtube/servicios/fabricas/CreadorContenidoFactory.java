@@ -5,14 +5,15 @@ import com.proyecto.youtube.modelo.contenido.Contenido;
 import com.proyecto.youtube.modelo.contenido.TransmisionEnVivo;
 import com.proyecto.youtube.modelo.contenido.Short;
 import com.proyecto.youtube.modelo.contenido.VideoLargo;
+
 public class CreadorContenidoFactory implements  FabricaContenido{
 
     @Override
-    public Contenido crearContenido(TipoContenido tipo, String titulo, String descripcion, CreadorContenido autor, Object... args) {
+    public Contenido crearContenido(TipoContenido tipo, String titulo, String descripcion, Canal canalAutor, Object... args) throws TipoContenidoNoReconocible{
         switch (tipo){
             case VIDEO_LARGO:
                 int duracion=(args.length > 0 && args[0] instanceof Integer)?(Integer) args[0]: 0;
-                boolean monetizado =(args.length > 1 && args[1] instanceof Boolean) ? (Boolean) args[1] : false;;
+                boolean monetizado =(args.length > 1 && args[1] instanceof Boolean) ? (Boolean) args[1] : false;
                 return new VideoLargo(titulo,descripcion,canalAutor,duracion,monetizado);
 
             case SHORT:
