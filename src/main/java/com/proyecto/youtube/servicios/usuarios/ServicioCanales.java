@@ -58,7 +58,12 @@ public class ServicioCanales {
             return Optional.empty();
         }
 
-        return Optional.ofNullable(canalesPorNombre.get(normalizarNombreCanal(nombreCanal)));
+        String nombreNormalizado = normalizarNombreCanal(nombreCanal);
+
+        return canalesPorId.values()
+                .stream()
+                .filter(canal -> normalizarNombreCanal(canal.getNombreCanal()).equals(nombreNormalizado))
+                .findFirst();
     }
 
     public boolean existeCanal(Canal canal) {
@@ -70,7 +75,26 @@ public class ServicioCanales {
             return false;
         }
 
-        return canalesPorNombre.containsKey(normalizarNombreCanal(nombreCanal));
+        String nombreNormalizado = normalizarNombreCanal(nombreCanal);
+
+        return canalesPorId.values()
+                .stream()
+                .anyMatch(canal -> normalizarNombreCanal(canal.getNombreCanal()).equals(nombreNormalizado));
+    }
+
+    public void actualizarNombreCanal(Canal canal, String nuevoNombre) {
+        validarCanalRegistrado(canal);
+
+        String nombreAnterior = normalizarNombreCanal(canal.getNombreCanal());
+        String nombreNuevoNormalizado = normalizarNombreCanal(nuevoNombre);
+
+        if (!nombreAnterior.equals(nombreNuevoNormalizado) && existeNombreCanal(nombreNuevoNormalizado)) {
+            throw new CanalInvalidoException("Ya existe un canal con ese nombre.");
+        }
+
+        canalesPorNombre.remove(nombreAnterior);
+        canal.actualizarNombre(nuevoNombre);
+        canalesPorNombre.put(normalizarNombreCanal(canal.getNombreCanal()), canal);
     }
 
     public void suscribirCanales(Canal canalSuscriptor, Canal canalObjetivo) {
@@ -181,7 +205,7 @@ public class ServicioCanales {
 
         String nombreNormalizado = normalizarNombreCanal(nombreCanal);
 
-        if (canalesPorNombre.containsKey(nombreNormalizado)) {
+        if (existeNombreCanal(nombreNormalizado)) {
             throw new CanalInvalidoException("Ya existe un canal con ese nombre.");
         }
     }

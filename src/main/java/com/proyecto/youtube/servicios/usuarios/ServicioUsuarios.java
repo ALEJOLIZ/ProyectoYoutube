@@ -47,7 +47,12 @@ public class ServicioUsuarios {
             return Optional.empty();
         }
 
-        return Optional.ofNullable(usuariosPorCorreo.get(normalizarCorreo(correo)));
+        String correoNormalizado = normalizarCorreo(correo);
+
+        return usuariosPorId.values()
+                .stream()
+                .filter(usuario -> usuario.getCorreo().equals(correoNormalizado))
+                .findFirst();
     }
 
     public boolean existeUsuario(Usuario usuario) {
@@ -59,7 +64,28 @@ public class ServicioUsuarios {
             return false;
         }
 
-        return usuariosPorCorreo.containsKey(normalizarCorreo(correo));
+        String correoNormalizado = normalizarCorreo(correo);
+
+        return usuariosPorId.values()
+                .stream()
+                .anyMatch(usuario -> usuario.getCorreo().equals(correoNormalizado));
+    }
+
+    public void actualizarCorreoUsuario(Usuario usuario, String nuevoCorreo) {
+        if (!existeUsuario(usuario)) {
+            throw new DatosUsuarioInvalidosException("El usuario debe estar registrado.");
+        }
+
+        String correoAnterior = usuario.getCorreo();
+        String correoNuevoNormalizado = normalizarCorreo(nuevoCorreo);
+
+        if (!correoAnterior.equals(correoNuevoNormalizado) && existeCorreo(correoNuevoNormalizado)) {
+            throw new DatosUsuarioInvalidosException("Ya existe un usuario con ese correo.");
+        }
+
+        usuariosPorCorreo.remove(correoAnterior);
+        usuario.actualizarCorreo(nuevoCorreo);
+        usuariosPorCorreo.put(usuario.getCorreo(), usuario);
     }
 
     public List<Usuario> listarUsuariosOrdenadosPorCorreo() {
@@ -91,7 +117,7 @@ public class ServicioUsuarios {
 
         String correoNormalizado = normalizarCorreo(correo);
 
-        if (usuariosPorCorreo.containsKey(correoNormalizado)) {
+        if (existeCorreo(correoNormalizado)) {
             throw new DatosUsuarioInvalidosException("Ya existe un usuario con ese correo.");
         }
     }
