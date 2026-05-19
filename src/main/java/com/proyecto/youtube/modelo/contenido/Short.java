@@ -1,13 +1,14 @@
 package com.proyecto.youtube.modelo.contenido;
 
 
-import com.proyecto.youtube.modelo.usuario.CreadorContenido;
+
+import com.proyecto.youtube.modelo.usuario.canal.Canal;
 
 public class Short extends Contenido {
     private String musicaDeFondo;
 
-    public Short(String titulo, String descripcion, CreadorContenido autor, String musica) {
-        super(titulo, descripcion, autor);
+    public Short(String titulo, String descripcion, Canal canalAutor, String musica) {
+        super(titulo, descripcion, canalAutor);
         this.musicaDeFondo = musica;
     }
 

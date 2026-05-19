@@ -1,6 +1,6 @@
 package com.proyecto.youtube.modelo.contenido;
 
-import com.proyecto.youtube.modelo.usuario.CreadorContenido;
+import com.proyecto.youtube.modelo.usuario.canal.Canal;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,12 +8,12 @@ import java.util.List;
 
 public class Playlist {
     private String nombre;
-    private final CreadorContenido propietario;
+    private final Canal canalPropietario;
     private List<Contenido> videos;
 
-    public Playlist(String nombre, CreadorContenido propietario){
+    public Playlist(String nombre, Canal canalPropietario){
         this.nombre = nombre;
-        this.propietario = propietario;
+        this.canalPropietario = canalPropietario;
         this.videos = new ArrayList<>();
     }
 

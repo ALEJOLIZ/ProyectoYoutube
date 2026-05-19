@@ -1,4 +1,5 @@
 package com.proyecto.youtube.modelo.interacciones;
+import com.proyecto.youtube.modelo.contenido.Contenido;
 import com.proyecto.youtube.modelo.usuario.Usuario;
 
 import java.util.ArrayList;
@@ -7,10 +8,12 @@ import java.util.List;
 public class Comentario extends Interaccion {
     private String texto;
     private List<Comentario> respuestas;
+    private Contenido contenidoPadre;
 
-    public Comentario(Usuario autor, String texto){
+    public Comentario(Usuario autor, String texto, Contenido contenidoPadre){
         super(autor);
         this.texto = texto;
+        this.contenidoPadre = contenidoPadre;
         this.respuestas = new ArrayList<>();
     }
 

@@ -1,14 +1,13 @@
 package com.proyecto.youtube.modelo.contenido;
 
-
-import com.proyecto.youtube.modelo.usuario.CreadorContenido;
+import com.proyecto.youtube.modelo.usuario.canal.Canal;
 
 public class TransmisionEnVivo extends Contenido {
     private boolean estaActivo;
     private int espectadoresActuales;
 
-    public TransmisionEnVivo(String titulo, String descripcion, CreadorContenido autor) {
-        super(titulo, descripcion, autor);
+    public TransmisionEnVivo(String titulo, String descripcion, Canal canalAutor) {
+        super(titulo, descripcion, canalAutor);
         this.estaActivo = true;
         this.espectadoresActuales = 0;
     }

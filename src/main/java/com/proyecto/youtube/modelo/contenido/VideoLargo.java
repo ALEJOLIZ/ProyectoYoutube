@@ -1,12 +1,14 @@
 package com.proyecto.youtube.modelo.contenido;
-import com.proyecto.youtube.modelo.usuario.CreadorContenido;
+
+
+import com.proyecto.youtube.modelo.usuario.canal.Canal;
 
 public class VideoLargo extends Contenido{
     private int duracionSegundos;
     private boolean esMonetizado;
 
-    public VideoLargo(String titulo, String descripcion, CreadorContenido autor, int duracion){
-        super(titulo, descripcion, autor);
+    public VideoLargo(String titulo, String descripcion, Canal canalAutor, int duracion){
+        super(titulo, descripcion, canalAutor);
         this.duracionSegundos = duracion;
         this.esMonetizado = false;
     }
