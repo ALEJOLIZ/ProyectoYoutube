@@ -24,7 +24,7 @@ public class CreadorContenidoFactory implements  FabricaContenido{
 
 
             default:
-                throw new IllegalArgumentException("Tipo de contenido no reconocido.");
+                throw new TipoContenidoNoReconocible("Tipo de contenido no reconocido.");
         }
     }
 }
