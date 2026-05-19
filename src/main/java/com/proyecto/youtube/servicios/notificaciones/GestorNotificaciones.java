@@ -1,27 +1,12 @@
 package com.proyecto.youtube.servicios.notificaciones;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.proyecto.youtube.modelo.contenido.Contenido;
+import com.proyecto.youtube.modelo.usuario.Usuario;
+import com.proyecto.youtube.modelo.usuario.canal.Canal;
 
-public class GestorNotificaciones implements SujetoObservable {
-    private List<Observador> suscriptores = new ArrayList<>();
-
-    @Override
-    public void suscribir(Observador obs) {
-        if (!suscriptores.contains(obs)) {
-            suscriptores.add(obs);
-        }
-    }
-
-    @Override
-    public void desuscribir(Observador obs) {
-        suscriptores.remove(obs);
-    }
-
-    @Override
-    public void notificar(Notificacion notificacion) {
-        for (Observador obs : suscriptores) {
-            obs.actualizar(notificacion);
-        }
+public class GestorNotificaciones {
+    public void notificarNuevoVideo(Canal canalQuePublica, Contenido nuevoVideo) {
+        String mensaje = "¡" + canalQuePublica.getNombreCanal() + " ha publicado: " + nuevoVideo.getTitulo() + "!";
+        canalQuePublica.notificar(mensaje);
     }
 }

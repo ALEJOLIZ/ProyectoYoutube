@@ -9,8 +9,7 @@ public class RecomendadorPorTendencias implements EstrategiaRecomendacion{
     @Override
     public List<Contenido> generarSugerencias(Usuario usuario, List<Contenido> baseDeDatos){
         return baseDeDatos.stream()
-                .sorted(Comparator.comparingInt(Contenido::getContadorVisualizaciones).reversed())
-                .limit(10)
+                .sorted((c1, c2) -> Integer.compare(c2.getVistas(), c1.getVistas()))
                 .collect(Collectors.toList());
     }
 }
