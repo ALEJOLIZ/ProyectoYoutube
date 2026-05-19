@@ -1,5 +1,6 @@
 package com.proyecto.youtube.modelo.usuario;
 
+import com.proyecto.youtube.modelo.usuario.canal.Canal;
 import com.proyecto.youtube.modelo.usuario.excepciones.CanalInvalidoException;
 import com.proyecto.youtube.modelo.usuario.excepciones.DatosUsuarioInvalidosException;
 import com.proyecto.youtube.servicios.notificaciones.Notificacion;

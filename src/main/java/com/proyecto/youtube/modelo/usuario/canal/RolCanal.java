@@ -1,5 +1,6 @@
-package com.proyecto.youtube.modelo.usuario;
+package com.proyecto.youtube.modelo.usuario.canal;
 
+import com.proyecto.youtube.modelo.usuario.Usuario;
 import com.proyecto.youtube.modelo.usuario.excepciones.PermisoDenegadoException;
 import com.proyecto.youtube.modelo.usuario.excepciones.RolCanalInvalidoException;
 import com.proyecto.youtube.modelo.usuario.permisos.PermisoCanalStrategy;

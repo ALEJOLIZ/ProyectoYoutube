@@ -1,4 +1,4 @@
-package com.proyecto.youtube.modelo.usuario;
+package com.proyecto.youtube.modelo.usuario.canal;
 
 public enum TipoRolCanal {
     PROPIETARIO,

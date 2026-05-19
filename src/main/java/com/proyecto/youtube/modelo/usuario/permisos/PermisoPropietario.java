@@ -1,6 +1,6 @@
 package com.proyecto.youtube.modelo.usuario.permisos;
 
-import com.proyecto.youtube.modelo.usuario.TipoRolCanal;
+import com.proyecto.youtube.modelo.usuario.canal.TipoRolCanal;
 
 public class PermisoPropietario implements PermisoCanalStrategy {
 
