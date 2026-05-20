@@ -27,6 +27,8 @@ public class Playlist {
         Collections.sort(videos);
     }
 
+    public String getNombre() { return nombre; }
+    public Canal getCanalPropietario() { return canalPropietario; }
     public List<Contenido> getVideos() {
         return new ArrayList<>(videos);
     }

@@ -1,6 +1,5 @@
 package com.proyecto.youtube.modelo.contenido;
 
-
 import com.proyecto.youtube.modelo.usuario.canal.Canal;
 
 public class VideoLargo extends Contenido{
@@ -10,10 +9,11 @@ public class VideoLargo extends Contenido{
     public VideoLargo(String titulo, String descripcion, Canal canalAutor, int duracion, boolean monetizado){
         super(titulo, descripcion, canalAutor);
         this.duracionSegundos = duracion;
-        this.esMonetizado = false;
+        this.esMonetizado = monetizado;
     }
 
     public int getDuracionSegundos() { return duracionSegundos; }
+    public boolean isEsMonetizado() { return esMonetizado; }
 
     @Override
     public String toString() {

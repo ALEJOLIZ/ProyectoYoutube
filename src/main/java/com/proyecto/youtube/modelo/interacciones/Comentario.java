@@ -25,6 +25,7 @@ public class Comentario extends Interaccion {
 
     public String getTexto() { return texto; }
     public List<Comentario> getRespuestas() { return new ArrayList<>(respuestas); }
+    public Contenido getContenidoPadre() { return contenidoPadre; }
 
     @Override
     public String toString() {
