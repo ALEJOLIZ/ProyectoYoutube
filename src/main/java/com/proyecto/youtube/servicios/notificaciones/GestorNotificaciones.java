@@ -1,24 +1,33 @@
 package com.proyecto.youtube.servicios.notificaciones;
 
 import com.proyecto.youtube.modelo.contenido.Contenido;
-import com.proyecto.youtube.modelo.usuario.Usuario;
 import com.proyecto.youtube.modelo.usuario.canal.Canal;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GestorNotificaciones implements SujetoObservable {
 
+    private final List<Observador> observadoresSistema = new ArrayList<>();
+
     @Override
     public void suscribir(Observador o) {
-        // En la nueva arquitectura, las suscripciones se añaden y validan en el modelo Canal.
+        if (o != null && !observadoresSistema.contains(o)) {
+            observadoresSistema.add(o);
+        }
     }
 
     @Override
     public void desuscribir(Observador o) {
-        // En la nueva arquitectura, las cancelaciones se manejan en el modelo Canal.
+        observadoresSistema.remove(o);
     }
 
     @Override
     public void notificar() {
-        // Método base genérico. En su lugar se utiliza la sobrecarga específica de abajo.
+        Notificacion global = new Notificacion("¡Bienvenido! YouTube ha actualizado sus políticas de privacidad.");
+        for (Observador obs : observadoresSistema) {
+            obs.actualizar(global);
+        }
     }
 
     public void notificarNuevoVideo(Canal canalQuePublica, Contenido nuevoVideo) {
@@ -27,8 +36,8 @@ public class GestorNotificaciones implements SujetoObservable {
         );
 
         if (canalQuePublica.getSuscriptores() != null) {
-            for (Canal suscriptor : canalQuePublica.getSuscriptores()) {
-                suscriptor.actualizarNombre(String.valueOf(notificacion));
+            for (Canal canalSuscriptor : canalQuePublica.getSuscriptores()) {
+                canalSuscriptor.getPropietario().actualizar(notificacion);
             }
         }
     }
