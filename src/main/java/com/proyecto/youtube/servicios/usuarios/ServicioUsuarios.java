@@ -46,13 +46,7 @@ public class ServicioUsuarios {
         if (correo == null || correo.isBlank()) {
             return Optional.empty();
         }
-
-        String correoNormalizado = normalizarCorreo(correo);
-
-        return usuariosPorId.values()
-                .stream()
-                .filter(usuario -> usuario.getCorreo().equals(correoNormalizado))
-                .findFirst();
+        return Optional.ofNullable(usuariosPorCorreo.get(normalizarCorreo(correo)));
     }
 
     public boolean existeUsuario(Usuario usuario) {
@@ -63,12 +57,7 @@ public class ServicioUsuarios {
         if (correo == null || correo.isBlank()) {
             return false;
         }
-
-        String correoNormalizado = normalizarCorreo(correo);
-
-        return usuariosPorId.values()
-                .stream()
-                .anyMatch(usuario -> usuario.getCorreo().equals(correoNormalizado));
+        return usuariosPorCorreo.containsKey(normalizarCorreo(correo));
     }
 
     public void actualizarCorreoUsuario(Usuario usuario, String nuevoCorreo) {
