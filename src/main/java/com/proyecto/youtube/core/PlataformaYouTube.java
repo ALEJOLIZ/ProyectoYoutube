@@ -1,12 +1,22 @@
 package com.proyecto.youtube.core;
 
+import com.proyecto.youtube.modelo.contenido.TransmisionEnVivo;
+import com.proyecto.youtube.modelo.contenido.VideoLargo;
+import com.proyecto.youtube.modelo.contenido.Short;
+import com.proyecto.youtube.modelo.interacciones.Comentario;
+import com.proyecto.youtube.modelo.interacciones.Interaccion;
+import com.proyecto.youtube.modelo.interacciones.Reaccion;
 import com.proyecto.youtube.modelo.usuario.Usuario;
 import com.proyecto.youtube.modelo.usuario.canal.Canal;
 import com.proyecto.youtube.modelo.contenido.Contenido;
 import com.proyecto.youtube.modelo.usuario.canal.RolCanal;
+import com.proyecto.youtube.modelo.usuario.excepciones.ContenidoNoEncontradoException;
 import com.proyecto.youtube.modelo.usuario.excepciones.PermisoDenegadoException;
 import com.proyecto.youtube.modelo.usuario.permisos.PermisoCanalStrategy;
 import com.proyecto.youtube.modelo.usuario.permisos.PermisoModeradorGestor;
+import com.proyecto.youtube.servicios.fabricas.TipoContenido;
+import com.proyecto.youtube.servicios.fabricas.TipoContenidoNoReconocible;
+import com.proyecto.youtube.modelo.interacciones.TipoReaccion;
 import com.proyecto.youtube.servicios.notificaciones.Notificacion;
 import com.proyecto.youtube.servicios.usuarios.ServicioUsuarios;
 import com.proyecto.youtube.servicios.usuarios.ServicioCanales;
@@ -158,6 +168,138 @@ public class PlataformaYouTube {
         }
     }
 
+    public UUID publicarContenido(UUID canalId, TipoContenido tipo, String titulo, String descripcion, Object... datos) {
+        Canal canalAutor = registroCanales.get(canalId);
+        if (canalAutor == null) throw new ContenidoNoEncontradoException("El canal no existe.");
+
+        try {
+            Contenido contenido = fabricaContenido.crearContenido(tipo, titulo, descripcion, canalAutor, datos);
+            baseDatosContenido.add(contenido);
+            System.out.println("\n[NUEVO CONTENIDO] '" + titulo + "' publicado por " + canalAutor.getNombreCanal());
+            gestorNotificaciones.notificarNuevoVideo(canalAutor, contenido);
+            return contenido.getId(); // Retornamos el ID para interactuar luego
+        } catch (TipoContenidoNoReconocible e) {
+            System.err.println("Error al publicar: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public Contenido obtenerContenido(UUID contenidoId) {
+        for (Contenido c : baseDatosContenido) {
+            if (c.getId().equals(contenidoId)) return c;
+        }
+        throw new ContenidoNoEncontradoException("El contenido solicitado no existe en la base de datos.");
+    }
+
+    public void verContenido(UUID usuarioId, UUID contenidoId) {
+        Usuario usuario = registroUsuarios.get(usuarioId);
+        Contenido contenido = obtenerContenido(contenidoId);
+
+        if (usuario != null && contenido != null) {
+            contenido.registrarVista();
+            System.out.println("Usuario " + usuario.getCorreo() + " ha visto: '" + contenido.getTitulo() + "' (Total vistas: " + contenido.getVistas() + ")");
+        }
+    }
+
+    public void reaccionarAContenido(UUID usuarioId, UUID contenidoId, TipoReaccion tipo) {
+        Usuario usuario = registroUsuarios.get(usuarioId);
+        Contenido contenido = obtenerContenido(contenidoId);
+
+        if (usuario != null && contenido != null) {
+            Reaccion reaccion = new Reaccion(usuario, tipo);
+            contenido.agregarInteracciones(reaccion);
+            System.out.println("Usuario " + usuario.getCorreo() + " dejó una reacción (" + tipo + ") en '" + contenido.getTitulo() + "'");
+        }
+    }
+
+    public Comentario comentarContenido(UUID usuarioId, UUID contenidoId, String texto) {
+        Usuario usuario = registroUsuarios.get(usuarioId);
+        Contenido contenido = obtenerContenido(contenidoId);
+
+        if (usuario != null && contenido != null) {
+            Comentario comentario = new Comentario(usuario, texto, contenido);
+            contenido.agregarInteracciones(comentario);
+            System.out.println("Usuario " + usuario.getCorreo() + " comentó: \"" + texto + "\"");
+            return comentario;
+        }
+        return null;
+    }
+
+    public void responderComentario(UUID usuarioId, Comentario comentarioPadre, String texto, UUID contenidoId) {
+        Usuario usuario = registroUsuarios.get(usuarioId);
+        Contenido contenidoPadre = obtenerContenido(contenidoId);
+
+        if (usuario != null && comentarioPadre != null && contenidoPadre != null) {
+            Comentario respuesta = new Comentario(usuario, texto, contenidoPadre);
+            comentarioPadre.agregarRespuesta(respuesta);
+            System.out.println("Usuario " + usuario.getCorreo() + " respondió: \"" + texto + "\"");
+        }
+    }
+
+    public void actualizarEspectadoresEnVivo(UUID contenidoId, int nuevosEspectadores) {
+        Contenido contenido = obtenerContenido(contenidoId);
+        if (contenido instanceof TransmisionEnVivo) {
+            ((TransmisionEnVivo) contenido).actualizarEspectadores(nuevosEspectadores);
+            System.out.println("STREAM UPDATE: '" + contenido.getTitulo() + "' ahora tiene " + nuevosEspectadores + " espectadores.");
+        }
+    }
+
+    public void finalizarTransmisionEnVivo(UUID contenidoId) {
+        Contenido contenido = obtenerContenido(contenidoId);
+        if (contenido instanceof TransmisionEnVivo) {
+            ((TransmisionEnVivo) contenido).finalizarTransmision();
+            System.out.println("STREAM FINALIZADO: '" + contenido.getTitulo() + "'.");
+        }
+    }
+
+    public void mostrarDetallesEInteracciones(UUID contenidoId) {
+        Contenido contenido = obtenerContenido(contenidoId);
+        System.out.println("=== REPORTE DETALLADO DEL CONTENIDO ===");
+        System.out.println("Título: " + contenido.getTitulo());
+        System.out.println("Descripción: " + contenido.getDescripcion());
+        System.out.println("Publicado el: " + contenido.getFechaPublicacion().toLocalDate());
+
+        if (contenido instanceof VideoLargo) {
+            VideoLargo vl = (VideoLargo) contenido;
+            System.out.println("Duración: " + vl.getDuracionSegundos() + "s | Monetizado: " + (vl.isEsMonetizado() ? "Sí" : "No"));
+        } else if (contenido instanceof Short) {
+            Short sh = (Short) contenido;
+            System.out.println("Música de fondo: " + sh.getMusicaDeFondo());
+        }
+
+        List<Interaccion> interacciones = contenido.getInteracciones();
+        if (interacciones.isEmpty()) {
+            System.out.println("\n  -> No hay interacciones registradas.");
+            return;
+        }
+
+        int likes = 0, dislikes = 0;
+        System.out.println("\n--- INTERACCIONES ---");
+        for (Interaccion i : interacciones) {
+
+            System.out.println("[ID: " + i.getId() + " | Fecha: " + i.getFechaCreacion().toLocalDate() + "] Autor: " + i.getAutor().getCorreo());
+
+            if (i instanceof Reaccion) {
+                Reaccion r = (Reaccion) i;
+                if (r.getTipo() == TipoReaccion.LIKE) likes++;
+                else dislikes++;
+                System.out.println("  -> Reacción: " + r.getTipo());
+
+            } else if (i instanceof Comentario) {
+                Comentario c = (Comentario) i;
+
+                System.out.println("  -> Comentó en '" + c.getContenidoPadre().getTitulo() + "': \"" + c.getTexto() + "\"");
+
+                if (!c.getRespuestas().isEmpty()) {
+                    for (Comentario resp : c.getRespuestas()) {
+                        System.out.println("       * Respuesta de " + resp.getAutor().getCorreo() + ": \"" + resp.getTexto() + "\"");
+                    }
+                }
+            }
+        }
+        System.out.println("\n[RESUMEN] Vistas Totales: " + contenido.getVistas() + " | Likes: " + likes + " | Dislikes: " + dislikes);
+        System.out.println("=======================================");
+    }
 
 
     public void actualizarPerfilCompleto(UUID usuarioId, String nuevoCorreo, String nuevoNombreCanal) {
