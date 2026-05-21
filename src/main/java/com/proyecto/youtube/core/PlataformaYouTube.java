@@ -1,6 +1,9 @@
 package com.proyecto.youtube.core;
 
-import com.proyecto.youtube.modelo.contenido.*;
+import com.proyecto.youtube.modelo.contenido.Contenido;
+import com.proyecto.youtube.modelo.contenido.TransmisionEnVivo;
+import com.proyecto.youtube.modelo.contenido.Playlist;
+import com.proyecto.youtube.modelo.contenido.VideoLargo;
 import com.proyecto.youtube.modelo.contenido.Short;
 import com.proyecto.youtube.modelo.interacciones.Comentario;
 import com.proyecto.youtube.modelo.interacciones.Interaccion;
@@ -54,6 +57,8 @@ public class PlataformaYouTube {
         this.servicioRolesCanal = new ServicioRolesCanal(this.servicioUsuarios, this.servicioCanales);
         this.fabricaContenido = new CreadorContenidoFactory();
     }
+
+    // --- MÉTODOS DE USUARIOS Y CANALES ---
 
     public UUID registrarUsuario(String nombre, String correo) {
         Usuario nuevoUsuario = servicioUsuarios.registrarUsuario(correo);
@@ -154,7 +159,7 @@ public class PlataformaYouTube {
     }
 
     public void emitirComunicadoGlobal() {
-        System.out.println("\n📢 [SISTEMA] Emitiendo comunicado global a todos los usuarios...");
+        System.out.println("\n[SISTEMA] Emitiendo comunicado global a todos los usuarios...");
         gestorNotificaciones.notificar();
     }
 
@@ -165,6 +170,8 @@ public class PlataformaYouTube {
             System.out.println("El usuario " + usuario.getCorreo() + " ha sido desuscrito de las alertas globales.");
         }
     }
+
+    // --- MÉTODOS DE CONTENIDO ---
 
     public UUID publicarContenido(UUID canalId, TipoContenido tipo, String titulo, String descripcion, Object... datos) {
         Canal canalAutor = registroCanales.get(canalId);
@@ -188,6 +195,8 @@ public class PlataformaYouTube {
         }
         throw new ContenidoNoEncontradoException("El contenido solicitado no existe en la base de datos.");
     }
+
+    // --- MÉTODOS DE INTERACCIONES Y VISUALIZACIONES ---
 
     public void verContenido(UUID usuarioId, UUID contenidoId) {
         Usuario usuario = registroUsuarios.get(usuarioId);
@@ -233,6 +242,8 @@ public class PlataformaYouTube {
             System.out.println("Usuario " + usuario.getCorreo() + " respondió: \"" + texto + "\"");
         }
     }
+
+    // --- MÉTODOS ESPECÍFICOS DE TRANSMISIÓN EN VIVO ---
 
     public void actualizarEspectadoresEnVivo(UUID contenidoId, int nuevosEspectadores) {
         Contenido contenido = obtenerContenido(contenidoId);
@@ -299,6 +310,8 @@ public class PlataformaYouTube {
         System.out.println("=======================================");
     }
 
+    // --- MÉTODOS DE PLAYLIST ---
+
     public Playlist crearPlaylist(String nombre, UUID canalId) {
         Canal canal = obtenerCanal(canalId);
         if (canal == null) throw new IllegalArgumentException("El canal no existe.");
@@ -321,6 +334,8 @@ public class PlataformaYouTube {
             System.out.println("  " + (i + 1) + ". " + videos.get(i).getTitulo() + " (Vistas: " + videos.get(i).getVistas() + ")");
         }
     }
+
+    // --- PANEL ADMINISTRATIVO DE SERVICIOS ---
 
     public void generarReporteAuditoriaGlobal() {
         System.out.println("\n========= ESTADÍSTICAS GLOBALES =========");
@@ -372,7 +387,6 @@ public class PlataformaYouTube {
         }
         System.out.println("==============================================================\n");
     }
-
 
     public void actualizarPerfilCompleto(UUID usuarioId, String nuevoCorreo, String nuevoNombreCanal) {
         Usuario usuario = registroUsuarios.get(usuarioId);
@@ -434,6 +448,8 @@ public class PlataformaYouTube {
             servicioRolesCanal.removerRol(rolMod);
         }
     }
+
+    // --- UTILIDADES ---
 
     public List<Contenido> mostrarFeed(UUID usuarioId) {
         Usuario usuario = registroUsuarios.get(usuarioId);
