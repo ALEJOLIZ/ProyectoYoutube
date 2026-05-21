@@ -4,7 +4,7 @@ de la red social YouTube, por medio del uso de estrategias de programación orie
 ## Aspectos importantes del proyecto:
 ### Desiciones de diseño:
 El proyecto cuenta con un sistema donde se podrá crear contenido en tres formatos diferentes 
-(shor, video, transmisión en vivo), además incluyendo un sistema de interacciones para que los 
+(short, video, transmisión en vivo), además incluyendo un sistema de interacciones para que los 
 usuarios puedan dar like o comentar en el contenido que hayan consumido. También cuenta con un 
 sistema de recomendaciones, el cual puede ser por medio de suscripciones o de tendencias. Para 
 finalizar, se integro un sistema de notificaciones donde se mantendrán informado a los usuarios sobre 
