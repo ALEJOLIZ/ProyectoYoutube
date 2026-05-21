@@ -2,6 +2,7 @@ package com.proyecto.youtube.core;
 
 import com.proyecto.youtube.modelo.contenido.Contenido;
 import com.proyecto.youtube.modelo.contenido.Playlist;
+import com.proyecto.youtube.modelo.contenido.VideoLargo;
 import com.proyecto.youtube.modelo.interacciones.Comentario;
 import com.proyecto.youtube.modelo.interacciones.TipoReaccion;
 import com.proyecto.youtube.modelo.usuario.canal.RolCanal;
@@ -11,6 +12,7 @@ import com.proyecto.youtube.servicios.fabricas.TipoContenido;
 import com.proyecto.youtube.servicios.recomendaciones.RecomendadorPorSuscripciones;
 import com.proyecto.youtube.servicios.recomendaciones.RecomendadorPorTendencias;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -160,8 +162,33 @@ public class Main {
         UUID canalProfe = youtube.crearCanal(idProfesor, "Clases POO");
         youtube.moderacionAvanzada(idElena, canalProfe, true);  // Lo oculta
         youtube.moderacionAvanzada(idElena, canalProfe, false); // Lo vuelve a mostrar (Lanzará excepción de seguridad)
+        System.out.println();
 
-        // 11.5 Generar el gran reporte de auditoría global
+        // ESCENARIO 12: FILTRADO CON STREAMS (API DE JAVA)
+
+        System.out.println(">> ESCENARIO 12: Filtrado de contenido avanzado (Streams)");
+
+        // Solicitamos la lista a través de la fachada
+        List<Contenido> todoElContenido = youtube.obtenerTodosLosContenidos();
+
+        System.out.println("Top contenido por vistas:");
+        todoElContenido.stream()
+                .sorted()                                  // usa el compareTo ya implementado
+                .limit(3)
+                .forEach(c -> System.out.println("  - " + c.getTitulo() + " (" + c.getVistas() + " vistas)"));
+
+        System.out.println("\nSolo VideoLargo:");
+        todoElContenido.stream()
+                .filter(c -> c instanceof VideoLargo)
+                .forEach(c -> System.out.println("  - " + c.getTitulo()));
+
+        System.out.println("\nPublicados hoy:");
+        todoElContenido.stream()
+                .filter(c -> c.getFechaPublicacion().toLocalDate().equals(LocalDate.now()))
+                .forEach(c -> System.out.println("  - " + c.getTitulo()));
+        System.out.println();
+
+        // Generar el gran reporte de auditoría global
         youtube.generarReporteAuditoriaGlobal();
 
         System.out.println("\n==========================================================");

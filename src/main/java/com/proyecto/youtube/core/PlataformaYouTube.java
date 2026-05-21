@@ -461,4 +461,8 @@ public class PlataformaYouTube {
 
     public Canal obtenerCanal(UUID canalId) { return registroCanales.get(canalId); }
 
+    public List<Contenido> obtenerTodosLosContenidos() {
+        return new ArrayList<>(baseDatosContenido);
+    }
+
 }
