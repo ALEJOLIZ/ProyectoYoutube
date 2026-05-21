@@ -1,14 +1,12 @@
 package com.proyecto.youtube.core;
 
-import com.proyecto.youtube.modelo.contenido.TransmisionEnVivo;
-import com.proyecto.youtube.modelo.contenido.VideoLargo;
+import com.proyecto.youtube.modelo.contenido.*;
 import com.proyecto.youtube.modelo.contenido.Short;
 import com.proyecto.youtube.modelo.interacciones.Comentario;
 import com.proyecto.youtube.modelo.interacciones.Interaccion;
 import com.proyecto.youtube.modelo.interacciones.Reaccion;
 import com.proyecto.youtube.modelo.usuario.Usuario;
 import com.proyecto.youtube.modelo.usuario.canal.Canal;
-import com.proyecto.youtube.modelo.contenido.Contenido;
 import com.proyecto.youtube.modelo.usuario.canal.RolCanal;
 import com.proyecto.youtube.modelo.usuario.excepciones.ContenidoNoEncontradoException;
 import com.proyecto.youtube.modelo.usuario.excepciones.PermisoDenegadoException;
@@ -301,6 +299,80 @@ public class PlataformaYouTube {
         System.out.println("=======================================");
     }
 
+    public Playlist crearPlaylist(String nombre, UUID canalId) {
+        Canal canal = obtenerCanal(canalId);
+        if (canal == null) throw new IllegalArgumentException("El canal no existe.");
+        Playlist nuevaPlaylist = new Playlist(nombre, canal);
+        System.out.println("Playlist '" + nuevaPlaylist.getNombre() + "' creada en el canal " + canal.getNombreCanal());
+        return nuevaPlaylist;
+    }
+
+    public void agregarVideoAPlaylist(Playlist playlist, UUID contenidoId) {
+        Contenido contenido = obtenerContenido(contenidoId);
+        playlist.agregarVideo(contenido);
+        System.out.println("Video '" + contenido.getTitulo() + "' agregado a la playlist '" + playlist.getNombre() + "'");
+    }
+
+    public void mostrarContenidoPlaylist(Playlist playlist) {
+        System.out.println("=== PLAYLIST: " + playlist.getNombre() + " (" + playlist.getCanalPropietario().getNombreCanal() + ") ===");
+        playlist.organizarPorVistas();
+        List<Contenido> videos = playlist.getVideos();
+        for (int i = 0; i < videos.size(); i++) {
+            System.out.println("  " + (i + 1) + ". " + videos.get(i).getTitulo() + " (Vistas: " + videos.get(i).getVistas() + ")");
+        }
+    }
+
+    public void generarReporteAuditoriaGlobal() {
+        System.out.println("\n========= ESTADÍSTICAS GLOBALES =========");
+
+        System.out.println("-> Usuarios Totales (Contador): " + servicioUsuarios.contarUsuariosRegistrados());
+        System.out.println("-> Usuarios en BD: " + servicioUsuarios.obtenerUsuariosRegistrados().size());
+
+        System.out.println("\n[Usuarios ordenados alfabéticamente]");
+        servicioUsuarios.listarUsuariosOrdenadosPorCorreo().forEach(u -> System.out.println("   - " + u.getCorreo()));
+
+        System.out.println("\n[Usuarios por antigüedad]");
+        servicioUsuarios.listarUsuariosPorFechaRegistroAscendente().forEach(u -> System.out.println("   - " + u.getCorreo() + " (" + u.getFechaRegistro().toLocalDate() + ")"));
+
+        System.out.println("\n   [Búsquedas de Control Interno]");
+        System.out.println("   - ID Usuario Aleatorio existe: " + servicioUsuarios.buscarUsuarioPorId(UUID.randomUUID()).isPresent());
+        System.out.println("   - Correo Fantasma existe: " + servicioUsuarios.buscarUsuarioPorCorreo("fantasma@youtube.com").isPresent());
+        System.out.println("   - Verificación de nulidad segura: " + servicioUsuarios.existeUsuario(null));
+
+        System.out.println("\n-> Canales Totales (Contador): " + servicioCanales.contarCanalesRegistrados());
+        System.out.println("-> Canales en BD: " + servicioCanales.obtenerCanalesRegistrados().size());
+
+        System.out.println("\n[Canales ordenados alfabéticamente]");
+        servicioCanales.listarCanalesOrdenadosPorNombre().forEach(c -> System.out.println("   - " + c.getNombreCanal()));
+
+        System.out.println("\n   [Búsquedas de Control de Canales]");
+        System.out.println("   - Canal UUID Aleatorio existe: " + servicioCanales.buscarCanalPorId(UUID.randomUUID()).isPresent());
+        System.out.println("   - Canal Fantasma existe: " + servicioCanales.buscarCanalPorNombre("CanalFantasma").isPresent());
+
+        Set<RolCanal> todosLosRoles = servicioRolesCanal.obtenerRolesAsignados();
+        System.out.println("\n-> Roles Dinámicos Asignados en el Sistema: " + todosLosRoles.size());
+
+        for (RolCanal rol : todosLosRoles) {
+            Usuario u = rol.getUsuarioAsignado();
+            Canal c = rol.getCanal();
+            System.out.println("   * Rol activo de " + u.getCorreo() + " en " + c.getNombreCanal());
+
+            boolean r1 = servicioRolesCanal.usuarioTieneRol(u, c, rol.getTipoRol());
+            boolean r2 = servicioRolesCanal.usuarioPuedeOcultarUsuarios(u, c);
+            boolean r3 = servicioRolesCanal.usuarioPuedeMostrarUsuarios(u, c);
+            boolean r4 = servicioRolesCanal.usuarioPuedeGestionarContenido(u, c);
+            boolean r5 = servicioRolesCanal.usuarioPuedeAsignarRoles(u, c);
+            boolean r6 = servicioRolesCanal.usuarioPuedeVerMetricas(u, c);
+
+            System.out.println("     - Acceso y permisos válidos (" + (r1 || r2 || r3 || r4 || r5 || r6) + ")");
+
+            int qtyRolesUsuario = servicioRolesCanal.obtenerRolesDeUsuario(u).size();
+            int qtyRolesCanal = servicioRolesCanal.obtenerRolesDeCanal(c).size();
+            System.out.println("     - Roles en este canal: " + qtyRolesCanal + " | Roles globales del usuario: " + qtyRolesUsuario);
+        }
+        System.out.println("==============================================================\n");
+    }
+
 
     public void actualizarPerfilCompleto(UUID usuarioId, String nuevoCorreo, String nuevoNombreCanal) {
         Usuario usuario = registroUsuarios.get(usuarioId);
@@ -363,6 +435,13 @@ public class PlataformaYouTube {
         }
     }
 
+    public List<Contenido> mostrarFeed(UUID usuarioId) {
+        Usuario usuario = registroUsuarios.get(usuarioId);
+        if (usuario == null) throw new IllegalArgumentException("Usuario no encontrado.");
+        return algoritmoActual.generarSugerencias(usuario, baseDatosContenido);
+    }
+
+    public void setAlgoritmoActual(EstrategiaRecomendacion nuevoAlgoritmo) { this.algoritmoActual = nuevoAlgoritmo; }
 
     public Canal obtenerCanal(UUID canalId) { return registroCanales.get(canalId); }
 
