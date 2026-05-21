@@ -21,7 +21,7 @@ public abstract class Contenido implements Comparable<Contenido> {
         this.id = UUID.randomUUID();
         this.titulo = Objects.requireNonNull(titulo, "El título no puede ser nulo");
         this.descripcion = descripcion;
-        // Validación de la existencia de un PDF
+        // Validación de la existencia de un canal
         this.canalAutor = Objects.requireNonNull(canalAutor, "Todo contenido debe tener un canal");
         this.fechaPublicacion = LocalDateTime.now();
         this.vistas = 0;

@@ -57,13 +57,7 @@ public class ServicioCanales {
         if (nombreCanal == null || nombreCanal.isBlank()) {
             return Optional.empty();
         }
-
-        String nombreNormalizado = normalizarNombreCanal(nombreCanal);
-
-        return canalesPorId.values()
-                .stream()
-                .filter(canal -> normalizarNombreCanal(canal.getNombreCanal()).equals(nombreNormalizado))
-                .findFirst();
+        return Optional.ofNullable(canalesPorNombre.get(normalizarNombreCanal(nombreCanal)));
     }
 
     public boolean existeCanal(Canal canal) {
@@ -74,12 +68,7 @@ public class ServicioCanales {
         if (nombreCanal == null || nombreCanal.isBlank()) {
             return false;
         }
-
-        String nombreNormalizado = normalizarNombreCanal(nombreCanal);
-
-        return canalesPorId.values()
-                .stream()
-                .anyMatch(canal -> normalizarNombreCanal(canal.getNombreCanal()).equals(nombreNormalizado));
+        return canalesPorNombre.containsKey(normalizarNombreCanal(nombreCanal));
     }
 
     public void actualizarNombreCanal(Canal canal, String nuevoNombre) {
