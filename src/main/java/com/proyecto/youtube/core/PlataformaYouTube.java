@@ -4,6 +4,10 @@ import com.proyecto.youtube.modelo.usuario.Usuario;
 import com.proyecto.youtube.modelo.usuario.canal.Canal;
 import com.proyecto.youtube.modelo.contenido.Contenido;
 import com.proyecto.youtube.modelo.usuario.canal.RolCanal;
+import com.proyecto.youtube.modelo.usuario.excepciones.PermisoDenegadoException;
+import com.proyecto.youtube.modelo.usuario.permisos.PermisoCanalStrategy;
+import com.proyecto.youtube.modelo.usuario.permisos.PermisoModeradorGestor;
+import com.proyecto.youtube.servicios.notificaciones.Notificacion;
 import com.proyecto.youtube.servicios.usuarios.ServicioUsuarios;
 import com.proyecto.youtube.servicios.usuarios.ServicioCanales;
 import com.proyecto.youtube.servicios.usuarios.ServicioRolesCanal;
@@ -78,6 +82,84 @@ public class PlataformaYouTube {
         }
     }
 
+    public RolCanal asignarRolModeracion(UUID usuarioId, UUID canalId, PermisoCanalStrategy estrategia) {
+        Usuario moderador = registroUsuarios.get(usuarioId);
+        Canal canal = obtenerCanal(canalId);
+
+        if (moderador == null || canal == null) throw new IllegalArgumentException("Usuario o Canal inválido.");
+
+        // Instancia y registra el RolCanal consumiendo las clases de estrategias de permisos
+        RolCanal nuevoRol = new RolCanal(moderador, canal, estrategia);
+        registroRoles.add(nuevoRol);
+        System.out.println("Rol " + estrategia.getTipoRol() + " asignado a " + moderador.getCorreo() + " en el canal " + canal.getNombreCanal());
+        return nuevoRol;
+    }
+
+    public void simularModeracionComentario(RolCanal rol, String contextoOperacion) {
+
+        System.out.println("\n--- Ejecutando Auditoría de Permisos ---");
+        System.out.println("ID Asignación: " + rol.getId());
+        System.out.println("Fecha de Asignación: " + rol.getFechaAsignacion().toLocalDate());
+        System.out.println("Estrategia activa: " + rol.getEstrategiaPermisos().getClass().getSimpleName());
+
+        rol.desactivar();
+        System.out.println("Estado temporal del rol cambiado a Activo: " + rol.estaActivo());
+        rol.activar();
+
+        if (rol.puedeEliminarComentarios()) {
+            System.out.println("Acción permitida: El moderador " + rol.getUsuarioAsignado().getCorreo() + " eliminó un comentario inapropiado (" + contextoOperacion + ").");
+        } else {
+            System.out.println("Acción denegada: Permisos insuficientes para eliminar comentarios.");
+        }
+    }
+
+    public void imprimirPanelAdministrativoCanal(UUID canalId) {
+        Canal canal = obtenerCanal(canalId);
+        if (canal == null) return;
+
+        System.out.println("\n=== PANEL ADMINISTRATIVO DE CANAL ===");
+        System.out.println("Canal: " + canal.getNombreCanal());
+        System.out.println("Descripción del Sistema: " + canal.getDescripcion());
+        System.out.println("Fecha de Apertura: " + canal.getFechaCreacion());
+        System.out.println("Propietario Principal: " + canal.getPropietario().getCorreo());
+        System.out.println("Métrica de Suscriptores (Contador): " + canal.obtenerCantidadSuscriptores());
+        System.out.println("Métrica de Suscripciones realizadas: " + canal.obtenerCantidadSuscripciones());
+        System.out.println("Cantidad de canales en lista negra: " + canal.getCanalesOcultos().size());
+        System.out.println("========================================");
+    }
+
+    public void revisarBandejaNotificacionesUsuario(UUID usuarioId) {
+        Usuario usuario = registroUsuarios.get(usuarioId);
+        if (usuario == null) return;
+
+        System.out.println("\nHistorial de Notificaciones de: " + usuario.getCorreo());
+        System.out.println("Miembro de la plataforma desde: " + usuario.getFechaRegistro().toLocalDate());
+
+        var alertas = usuario.getHistorialNotificaciones();
+        if (alertas.isEmpty()) {
+            System.out.println("  -> Tu bandeja de entrada está limpia.");
+        } else {
+            for (Notificacion n : alertas) {
+                System.out.println("  * [ID: " + n.getId().toString().substring(0,8) + " | " + n.getFecha().toLocalTime() + "] " + n.getMensaje());
+            }
+        }
+    }
+
+    public void emitirComunicadoGlobal() {
+        System.out.println("\n📢 [SISTEMA] Emitiendo comunicado global a todos los usuarios...");
+        gestorNotificaciones.notificar();
+    }
+
+    public void darDeBajaUsuarioAlertas(UUID usuarioId) {
+        Usuario usuario = registroUsuarios.get(usuarioId);
+        if(usuario != null) {
+            gestorNotificaciones.desuscribir(usuario);
+            System.out.println("El usuario " + usuario.getCorreo() + " ha sido desuscrito de las alertas globales.");
+        }
+    }
+
+
+
     public void actualizarPerfilCompleto(UUID usuarioId, String nuevoCorreo, String nuevoNombreCanal) {
         Usuario usuario = registroUsuarios.get(usuarioId);
         if (usuario != null) {
@@ -103,6 +185,42 @@ public class PlataformaYouTube {
             System.out.println("Estado de suscripción: " + estado + " | Subs del objetivo: " + subsCanal + " | Suscripciones del usuario: " + seguidos);
         }
     }
+
+    public void moderacionAvanzada(UUID idMod, UUID idObjetivo, boolean ocultar) {
+        RolCanal rolEjecutor = registroRoles.stream()
+                .filter(r -> r.getUsuarioAsignado().getId().equals(idMod))
+                .findFirst().orElse(null);
+        Canal canalObjetivo = obtenerCanal(idObjetivo);
+
+        if (rolEjecutor != null && canalObjetivo != null) {
+            try {
+                if (ocultar) {
+                    servicioCanales.ocultarCanalEnCanal(rolEjecutor, canalObjetivo);
+                    System.out.println("El canal fue ocultado exitosamente.");
+                } else {
+                    servicioCanales.mostrarCanalEnCanal(rolEjecutor, canalObjetivo);
+                    System.out.println("El canal fue mostrado exitosamente.");
+                }
+                boolean estaOculto = servicioCanales.canalEstaOcultoEn(rolEjecutor.getCanal(), canalObjetivo);
+                System.out.println("  -> Estado actual de ocultamiento: " + estaOculto);
+            } catch (PermisoDenegadoException e) {
+                System.out.println("Operación denegada por seguridad: " + e.getMessage());
+            }
+        }
+    }
+
+    public void gestionarEstructuraRoles(UUID idPropietario, UUID idNuevoMod, UUID idCanal) {
+        Usuario propietario = registroUsuarios.get(idPropietario);
+        Usuario nuevoMod = registroUsuarios.get(idNuevoMod);
+        Canal canal = obtenerCanal(idCanal);
+
+        if (propietario != null && nuevoMod != null && canal != null) {
+            RolCanal rolProp = servicioRolesCanal.asignarRolPropietario(propietario, canal);
+            RolCanal rolMod = servicioRolesCanal.asignarRolComo(rolProp, nuevoMod, canal, new PermisoModeradorGestor());
+            servicioRolesCanal.removerRol(rolMod);
+        }
+    }
+
 
     public Canal obtenerCanal(UUID canalId) { return registroCanales.get(canalId); }
 
