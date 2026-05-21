@@ -12,7 +12,7 @@ nuevo contenido que suba alguno de los canales a los que estén suscritos.
 En un principio se había pensado la parte de los usuarios donde  existen creadores de contenidos 
 o consumidores, pero se prefirio irse por un sistema de canales donde cada usuario que cree una cuenta 
 contara con un canal en el cual podrá subir contenido o simplemente consumir contenido de otros canales.
-### Patrones de diseño
+### Patrones de diseño:
 Para reducir las posibles causas de error y hacer más escalable el proyecto, se implementaron algunos 
 patrones de diseño. Entre estos se encuentran:
 * Factory Method: este es un patrón que permite crear objetos con una interfaz en una superclase,
@@ -23,3 +23,5 @@ de diferentes maneras. En este caso se usa para recomendar videos por medio de d
 por suscripción y por tendencias.
 * Observer: este es un patrón que permite informar sobre el cambio de estado de un objeto observado a los
 objetos que los están observando. En este caso se uso para el sistema de notificaciones implementado.
+## Diapositivas:
+https://canva.link/5dfoajg92ni5yda
